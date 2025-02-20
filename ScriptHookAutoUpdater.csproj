@@ -10,6 +10,8 @@
 	<PlatformTarget>x64</PlatformTarget>
 	<Platforms>x64;x86</Platforms>
 	<Configurations>Debug;Release</Configurations>
+	<AssemblyVersion>1.0.1</AssemblyVersion>
+	<FileVersion>1.0.1</FileVersion>
   </PropertyGroup>
 
 </Project>
