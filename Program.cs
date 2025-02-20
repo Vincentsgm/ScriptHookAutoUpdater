@@ -26,10 +26,15 @@ namespace ScriptHookAutoUpdater
             {
                 Console.WriteLine("Game version = 3337 detected. Forcing legacy version.");
             }
+            bool changeHost = gtaVersionInfo.FileBuildPart >= 3442;
+            if (changeHost)
+            {
+                Console.WriteLine("Game version >= 3442 detected. Changing download domain to ntscorp.ru.");
+            }
             Console.WriteLine("Deleting existing ScriptHook download folder");
             DeleteExistingCache();
             Console.WriteLine("Downloading ScriptHook");
-            if (await DownloadScriptHook(gtaVersion, legacyVersion))
+            if (await DownloadScriptHook(gtaVersion, legacyVersion, changeHost))
             {
                 Console.WriteLine("Unzipping ScriptHook");
                 UnzipScriptHook();
@@ -47,14 +52,17 @@ namespace ScriptHookAutoUpdater
             Console.ReadLine();
         }
 
-        static async Task<bool> DownloadScriptHook(string gtaVersion, bool legacy)
+        static async Task<bool> DownloadScriptHook(string gtaVersion, bool legacy, bool changeHost)
         {
             using (WebClient client = new())
             {
-                client.Headers.Add(HttpRequestHeader.Referer, "http://www.dev-c.com/gtav/scripthookv/");
+                if (!changeHost)
+                {
+                    client.Headers.Add(HttpRequestHeader.Referer, "http://www.dev-c.com/gtav/scripthookv/");
+                }
                 try
                 {
-                    string uri = $"http://www.dev-c.com/files/ScriptHookV_{gtaVersion}";
+                    string uri = changeHost ? $"https://ntscorp.ru/dev-c/ScriptHookV_{gtaVersion}" : $"http://www.dev-c.com/files/ScriptHookV_{gtaVersion}";
                     if (legacy) uri += "_legacy";
                     await client.DownloadFileTaskAsync(new Uri(uri + ".zip"), "ScriptHook.zip");
                     return true;
@@ -63,6 +71,7 @@ namespace ScriptHookAutoUpdater
                 {
                     Console.WriteLine("Error when downloading ScriptHook!");
                     Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.StackTrace);
                     File.Delete("ScriptHook.zip");
                     return false;
                 }
